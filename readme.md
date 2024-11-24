@@ -9,6 +9,10 @@ This is a Flask-based web application that allows users to classify images into 
 - Select filtering options for attributes like humor, sarcasm, offensiveness, motivation, and overall sentiment.
 - Save classification results into an Excel file.
 - User-friendly, responsive interface using Bootstrap.
+  
+## Screenshots
+
+![alt text](https://raw.githubusercontent.com/newazbenalam/flask-image-categorizer/refs/heads/main/templates/Screenshot%202024-11-24%20235315.png)
 
 ---
 
