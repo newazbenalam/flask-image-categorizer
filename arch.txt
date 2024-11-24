@@ -1,0 +1,10 @@
+project/
+│
+├── app.py          # The Flask app
+├── static/         # To serve images
+│   ├── input/      # Folder containing input images
+│   ├── cartoon_images/
+│   ├── real_person/
+│   └── uncategory/
+├── templates/
+│   └── index.html  # HTML for the web interface

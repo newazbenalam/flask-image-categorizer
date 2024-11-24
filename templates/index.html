@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter</title>
+</head>
+<body>
+    <h1>Image Filter</h1>
+    {% if image %}
+        <img src="{{ url_for('static', filename='input/' + image) }}" alt="Current Image" style="max-width: 500px;"><br>
+        <button onclick="window.location.href='/filter/cartoon/{{ image }}'">Cartoon Image</button>
+        <button onclick="window.location.href='/filter/person/{{ image }}'">Real Person</button>
+        <button onclick="window.location.href='/filter/uncategory/{{ image }}'">Uncategory</button>
+    {% else %}
+        <p>All images have been sorted!</p>
+    {% endif %}
+</body>
+</html>
