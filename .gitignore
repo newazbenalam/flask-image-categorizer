@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 static/
+Image_Categorization_Log.xlsx
 
 # C extensions
 *.so
