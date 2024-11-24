@@ -117,7 +117,7 @@ def index():
         shutil.move(src_path, dest_path)
 
         # Log the action to the Excel file
-        log_action(image_id, humour, sarcastic, offensive, motivational, overall, category)
+        log_action(image_id.split('.')[0], humour, sarcastic, offensive, motivational, overall, category)
 
         return redirect(url_for('index'))
 
