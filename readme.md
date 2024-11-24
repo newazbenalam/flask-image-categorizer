@@ -83,6 +83,10 @@ This is a Flask-based web application that allows users to classify images into 
 
 5. **Completion**:
    - Once all images are classified, a message will indicate that the task is complete.
+  
+```sh
+=FILTER(A2:G1048576, G2:G1048576="Cartoon", "No matches found")
+```
 
 ---
 

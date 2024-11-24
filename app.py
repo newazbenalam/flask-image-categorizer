@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
 import shutil
-from openpyxl import Workbook, load_workbook
+from openpyxl import load_workbook, Workbook
+from openpyxl.worksheet.table import Table
+from openpyxl.worksheet.filters import AutoFilter
 from datetime import datetime
 
 app = Flask(__name__)
@@ -28,18 +30,60 @@ def initialize_log():
         ws.title = "Log"
         ws.append(["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Timestamp"])
         wb.save(LOG_FILE)
+        wb.close()
 
 # Get all images in input directory
 def get_images():
     return [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('png', 'jpg', 'jpeg', 'gif'))]
 
 # Log categorization action
-def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category):
-    wb = load_workbook(LOG_FILE)
-    ws = wb.active
-    ws.append([image_id, humour, sarcastic, offensive, motivational, overall, category, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-    wb.save(LOG_FILE)
 
+# Log categorization action with AutoFilter
+def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category):
+    # Check if the log file exists, if not, create it
+    if not os.path.exists(LOG_FILE):
+        # Create a new workbook and sheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Log"
+        
+        # Create the header row
+        headers = ["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Timestamp"]
+        ws.append(headers)
+
+        # Apply AutoFilter to the header row
+        ws.auto_filter.ref = "A1:H1"  # Set filter range for the headers
+
+        # Save the workbook
+        wb.save(LOG_FILE)
+    else:
+        # Load the existing workbook
+        wb = load_workbook(LOG_FILE)
+        ws = wb.active
+        
+        # Apply AutoFilter if not already applied (check for existing filter range)
+        if not ws.auto_filter.ref:
+            ws.auto_filter.ref = "A1:H1"  # Apply AutoFilter to the headers
+
+    # Append the new log entry as a row
+    row = [
+        image_id,
+        humour,
+        sarcastic,
+        offensive,
+        motivational,
+        overall,
+        category,
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ]
+    
+    ws.append(row)
+
+    # Save the updated workbook
+    wb.save(LOG_FILE)
+    
+    
+    
 @app.route('/', methods=['GET', 'POST'])
 def index():
     images = get_images()
