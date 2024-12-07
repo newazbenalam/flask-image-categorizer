@@ -42,7 +42,7 @@ This is a Flask-based web application that allows users to classify images into 
 3. Activate the virtual environment:
 
    ```bash
-   .\venv\Scripts\Activate.ps1
+   .\.venv\Scripts\Activate.ps1
    ```
 
 4. Install dependencies:
