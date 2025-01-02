@@ -28,7 +28,7 @@ def initialize_log():
         wb = Workbook()
         ws = wb.active
         ws.title = "Log"
-        ws.append(["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Timestamp"])
+        ws.append(["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Timestamp"])
         wb.save(LOG_FILE)
         wb.close()
 
@@ -37,35 +37,21 @@ def get_images():
     return [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('png', 'jpg', 'jpeg', 'gif'))]
 
 # Log categorization action
-
-# Log categorization action with AutoFilter
-def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category):
-    # Check if the log file exists, if not, create it
+def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category, confidence):
     if not os.path.exists(LOG_FILE):
-        # Create a new workbook and sheet
         wb = Workbook()
         ws = wb.active
         ws.title = "Log"
-        
-        # Create the header row
-        headers = ["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Timestamp"]
+        headers = ["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Timestamp"]
         ws.append(headers)
-
-        # Apply AutoFilter to the header row
-        ws.auto_filter.ref = "A1:H1"  # Set filter range for the headers
-
-        # Save the workbook
+        ws.auto_filter.ref = "A1:I1"
         wb.save(LOG_FILE)
     else:
-        # Load the existing workbook
         wb = load_workbook(LOG_FILE)
         ws = wb.active
-        
-        # Apply AutoFilter if not already applied (check for existing filter range)
         if not ws.auto_filter.ref:
-            ws.auto_filter.ref = "A1:H1"  # Apply AutoFilter to the headers
+            ws.auto_filter.ref = "A1:I1"
 
-    # Append the new log entry as a row
     row = [
         image_id,
         humour,
@@ -74,16 +60,12 @@ def log_action(image_id, humour, sarcastic, offensive, motivational, overall, ca
         motivational,
         overall,
         category,
+        confidence,
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ]
-    
     ws.append(row)
-
-    # Save the updated workbook
     wb.save(LOG_FILE)
-    
-    
-    
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     images = get_images()
@@ -93,7 +75,6 @@ def index():
         current_image = None
 
     if request.method == 'POST':
-        # Collect classification inputs
         image_id = request.form.get("image_id")
         humour = request.form.get("humour")
         sarcastic = request.form.get("sarcastic")
@@ -101,8 +82,8 @@ def index():
         motivational = request.form.get("motivational")
         overall = request.form.get("overall")
         category = request.form.get("category")
+        confidence = request.form.get("confidence")
 
-        # Move the image to the selected category folder
         src_path = os.path.join(INPUT_DIR, image_id)
         if category == "cartoon":
             dest_dir = CARTOON_DIR
@@ -116,26 +97,12 @@ def index():
         dest_path = os.path.join(dest_dir, image_id)
         shutil.move(src_path, dest_path)
 
-        # Log the action to the Excel file
-        log_action(image_id.split('.')[0], humour, sarcastic, offensive, motivational, overall, category)
+        log_action(image_id.split('.')[0], humour, sarcastic, offensive, motivational, overall, category, confidence)
 
         return redirect(url_for('index'))
 
-    # remaining_images = get_remaining_images()  # Function to fetch remaining images
     return render_template('index.html', image=current_image)
 
-# Get remaining images from the input directory
-def get_remaining_images():
-    """
-    Fetches the list of remaining images in the input folder.
-
-    Returns:
-        list: Sorted list of filenames of remaining images in the input directory.
-    """
-    # List only image files in the input folder
-    images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('png', 'jpg', 'jpeg', 'gif'))]
-    return sorted(images)
-
 if __name__ == '__main__':
-    initialize_log()  # Ensure log file is ready
+    initialize_log()
     app.run(debug=True)
