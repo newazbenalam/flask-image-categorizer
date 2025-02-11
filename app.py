@@ -28,7 +28,7 @@ def initialize_log():
         wb = Workbook()
         ws = wb.active
         ws.title = "Log"
-        ws.append(["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Timestamp"])
+        ws.append(["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Languages", "Timestamp"])
         wb.save(LOG_FILE)
         wb.close()
 
@@ -37,20 +37,20 @@ def get_images():
     return [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('png', 'jpg', 'jpeg', 'gif'))]
 
 # Log categorization action
-def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category, confidence):
+def log_action(image_id, humour, sarcastic, offensive, motivational, overall, category, confidence, languages):
     if not os.path.exists(LOG_FILE):
         wb = Workbook()
         ws = wb.active
         ws.title = "Log"
-        headers = ["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Timestamp"]
+        headers = ["Image ID", "Humour", "Sarcastic", "Offensive", "Motivational", "Overall", "Category", "Confidence", "Languages", "Timestamp"]
         ws.append(headers)
-        ws.auto_filter.ref = "A1:I1"
+        ws.auto_filter.ref = "A1:J1"
         wb.save(LOG_FILE)
     else:
         wb = load_workbook(LOG_FILE)
         ws = wb.active
         if not ws.auto_filter.ref:
-            ws.auto_filter.ref = "A1:I1"
+            ws.auto_filter.ref = "A1:J1"
 
     row = [
         image_id,
@@ -61,18 +61,17 @@ def log_action(image_id, humour, sarcastic, offensive, motivational, overall, ca
         overall,
         category,
         confidence,
+        languages,
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ]
     ws.append(row)
     wb.save(LOG_FILE)
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     images = get_images()
-    if images:
-        current_image = images[0]
-    else:
-        current_image = None
+    current_image = images[0] if images else None
 
     if request.method == 'POST':
         image_id = request.form.get("image_id")
@@ -83,6 +82,10 @@ def index():
         overall = request.form.get("overall")
         category = request.form.get("category")
         confidence = request.form.get("confidence")
+        
+        # Capture multiple selected languages
+        languages = request.form.getlist("languages")
+        languages_str = ", ".join(languages)
 
         src_path = os.path.join(INPUT_DIR, image_id)
         if category == "cartoon":
@@ -97,11 +100,13 @@ def index():
         dest_path = os.path.join(dest_dir, image_id)
         shutil.move(src_path, dest_path)
 
-        log_action(image_id.split('.')[0], humour, sarcastic, offensive, motivational, overall, category, confidence)
+        # Log action with selected languages
+        log_action(image_id.split('.')[0], humour, sarcastic, offensive, motivational, overall, category, confidence, languages_str)
 
         return redirect(url_for('index'))
 
     return render_template('index.html', image=current_image)
+
 
 if __name__ == '__main__':
     initialize_log()
